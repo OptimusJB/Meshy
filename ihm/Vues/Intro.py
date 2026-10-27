@@ -1,9 +1,9 @@
 import curses
-from SuperClasses import Widget
+from Modules import Widget
 
 class Intro(Widget.Widget):
     def __init__(self, ecran_parent:curses.window, x:int, y:int, largeur:int, hauteur:int):
-        super().__init__(ecran_parent, x, y, largeur, hauteur)
+        super().__init__(None, ecran_parent, x, y, largeur, hauteur)
         self.transposition = {0:"ihm", 1:"flash"}
         self.selected = 0
 
@@ -24,14 +24,18 @@ class Intro(Widget.Widget):
             if self.transposition[self.selected] == "flash":
                 attribut_texte = curses.A_REVERSE
             self.ecran.addstr(y, x, "Flasher un compagnon", attribut_texte)
-        except:
+        except curses.error:
             pass
 
-    def input_custom(self, touche:int):
+    def input_custom(self, touche:int) -> bool:
         if touche == curses.KEY_UP:
-            self.selected = (self.selected + 1) % len(self.transposition.keys())
-        elif touche == curses.KEY_DOWN:
             self.selected = (self.selected - 1) % len(self.transposition.keys())
+            return True
+        elif touche == curses.KEY_DOWN:
+            self.selected = (self.selected + 1) % len(self.transposition.keys())
+            return True
+        return False
 
-    def resize_custom(self, largeur_max:int, hauteur_max:int):
-        self.ecran.resize(hauteur_max, largeur_max)
+    def resize_custom(self, ecran_parent:curses.window):
+        dimensions = ecran_parent.getmaxyx()
+        self.ecran.resize(dimensions[0], dimensions[1])
