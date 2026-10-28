@@ -2,8 +2,8 @@ import curses
 from Modules import Widget
 
 class Intro(Widget.Widget):
-    def __init__(self, ecran_parent:curses.window, x:int, y:int, largeur:int, hauteur:int):
-        super().__init__(None, ecran_parent, x, y, largeur, hauteur)
+    def __init__(self):
+        super().__init__()
         self.transposition = {0:"ihm", 1:"flash"}
         self.selected = 0
 
@@ -36,6 +36,5 @@ class Intro(Widget.Widget):
             return True
         return False
 
-    def resize_custom(self, ecran_parent:curses.window):
-        dimensions = ecran_parent.getmaxyx()
-        self.ecran.resize(dimensions[0], dimensions[1])
+    def resize_custom(self, largeur, hauteur) -> tuple[int, int, int, int]:
+        return (0, 0, largeur, hauteur)

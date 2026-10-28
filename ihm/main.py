@@ -5,7 +5,7 @@ from Modules import Widget
 
 class Orchestrateur:
     def __init__(self):
-        self.vue_base = Intro.Intro
+        self.vue_base = "intro"
         #self.changement_vue = None  # mettre une vue pour que le changement s'opère
         self.vue = None
         self.focus = None
@@ -13,22 +13,25 @@ class Orchestrateur:
 
         self.vues = {"intro":Intro.Intro}
 
-    def changer_vue(self, nom_vue:str, ecran:curses.window, dimensions):
-        self.vue = self.vues[nom_vue](ecran, 0, 0, dimensions[1], dimensions[0])
+    def set_child(self, nom_vue:str, ecran:curses.window):
+        if not (nom_vue in self.vues.keys()):
+            raise ValueError(f"la vue {nom_vue} n'existe pas")
+
+        self.vue = self.vues[nom_vue]()
+        self.vue.resize(ecran)
         #self.changement_vue = None
         self.focus = self.vue
         self.vue.a_focus = True
         self.do_draw = True
+        self.vue.ready_trigger = True
+        self.vue.on_ready()
 
     def run(self, ecran:curses.window):
         # initialisation
         curses.curs_set(0)  # curseur caché
         ecran.timeout(50) # timeout de 50ms pour ne pas rester bloqué au getch()
-        dimensions = ecran.getmaxyx()
 
-        self.vue = self.vue_base(ecran, 0, 0, dimensions[1], dimensions[0])
-        self.focus = self.vue
-        self.vue.a_focus = True
+        self.set_child(self.vue_base, ecran)
 
         self.do_draw = True
         while True:
@@ -47,7 +50,6 @@ class Orchestrateur:
                 self.do_draw = True
                 # on check si la touche est un resize
                 if touche == curses.KEY_RESIZE:
-                    dimensions = ecran.getmaxyx()
                     self.vue.resize(ecran)
                 else:
                     self.focus.input(touche)
@@ -68,7 +70,7 @@ class Orchestrateur:
 
                     elif signal["nom"] == "&ask_changement_vue&":
                         signals.clear()
-                        self.changer_vue(signal["data"], ecran, dimensions)
+                        self.set_child(signal["data"], ecran)
                         break
                     else:
                         # on envoie le signal aux widgets
