@@ -13,28 +13,47 @@ class Orchestrateur:
 
         self.vues = {"intro":Intro.Intro}
 
-    def set_child(self, nom_vue:str, ecran:curses.window):
+    def changer_vue(self, nom_vue:str, ecran:curses.window):
         if not (nom_vue in self.vues.keys()):
             raise ValueError(f"la vue {nom_vue} n'existe pas")
 
         self.vue = self.vues[nom_vue]()
         self.vue.resize(ecran)
         #self.changement_vue = None
-        self.focus = self.vue
-        self.vue.a_focus = True
-        self.do_draw = True
-        self.vue.ready_trigger = True
+        self.set_focus(self.vue)
         self.vue.on_ready()
+
+    def set_focus(self, widget:Widget.Widget) -> None:
+        if not isinstance(widget, Widget.Widget):
+            widget = self.vue
+
+        # on retire le a_focus de l'ancien s'il y en a un
+        if isinstance(self.focus, Widget.Widget):
+            self.focus.a_focus = False
+
+        self.focus = widget
+        self.focus.a_focus = True
+        self.do_draw = True
+
+    def verifier_focus(self):
+        # fonction qui vérifie que le focus est bien dans l'arborescence
+        # utile dans le cas où le fils puis le parent ont été supprimé dans le même évènement (avant que le ask_focus du fils soit exécuté)
+        if self.focus is not None:
+            if not self.focus.est_dans(self.vue):
+                # on met le focus a self.vue
+                self.set_focus(self.vue)
 
     def run(self, ecran:curses.window):
         # initialisation
         curses.curs_set(0)  # curseur caché
         ecran.timeout(50) # timeout de 50ms pour ne pas rester bloqué au getch()
 
-        self.set_child(self.vue_base, ecran)
+        self.changer_vue(self.vue_base, ecran)
 
         self.do_draw = True
         while True:
+            # on vérifie le focus
+            self.verifier_focus()
 
             if self.do_draw:
                 self.do_draw = False
@@ -62,15 +81,11 @@ class Orchestrateur:
                     if signal["nom"] == "&ask_focus&":
                         # on vérifie que le widget est dans l'arborescence
                         if isinstance(signal["data"], Widget.Widget) and signal["data"].est_dans(self.vue):
-                            # on retire le a_focus de l'ancien s'il y en a un
-                            if isinstance(self.focus, Widget.Widget):
-                                self.focus.a_focus = False
-                            self.focus = signal["data"]
-                            self.focus.a_focus = True
+                            self.set_focus(signal["data"])
 
                     elif signal["nom"] == "&ask_changement_vue&":
                         signals.clear()
-                        self.set_child(signal["data"], ecran)
+                        self.changer_vue(signal["data"], ecran)
                         break
                     else:
                         # on envoie le signal aux widgets
