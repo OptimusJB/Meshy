@@ -103,7 +103,7 @@ class Widget:
         if largeur <= 0 or hauteur <= 0:
             raise ValueError(f"dimensions sous-fenêtre invalide : ({largeur}, {hauteur})")
         if x + largeur > largeur_max or y + hauteur > hauteur_max:
-            raise ValueError(f"sous-fenêtre trop grande, maximale : ({largeur_max}, {hauteur_max}), actuelle : ({largeur}, {hauteur})")
+            raise ValueError(f"sous-fenêtre trop grande, maximale : ({largeur_max}, {hauteur_max}), actuelle : ({largeur}, {hauteur}) avec x={x}, y={y}")
 
         # on recrée la fenêtre
         self.create_sub_window(ecran_parent, x, y, largeur, hauteur)

@@ -34,6 +34,11 @@ class Intro(Widget.Widget):
         elif touche == curses.KEY_DOWN:
             self.selected = (self.selected + 1) % len(self.transposition.keys())
             return True
+
+        elif touche == ord("\n"):   # KEY_ENTER ne fonctionne pas
+            if self.transposition[self.selected] == "ihm":
+                self.changer_vue("connexion")
+                return True
         return False
 
     def resize_custom(self, largeur, hauteur) -> tuple[int, int, int, int]:

@@ -1,7 +1,9 @@
 import curses
 from Vues import Intro
+from Vues import Connexion
 from Modules.Signals import signals
 from Modules import Widget
+import asyncio
 
 class Orchestrateur:
     def __init__(self):
@@ -11,7 +13,7 @@ class Orchestrateur:
         self.focus = None
         self.do_draw = False
 
-        self.vues = {"intro":Intro.Intro}
+        self.vues = {"intro":Intro.Intro, "connexion":Connexion.Connexion}
 
     def changer_vue(self, nom_vue:str, ecran:curses.window):
         if not (nom_vue in self.vues.keys()):
@@ -43,7 +45,7 @@ class Orchestrateur:
                 # on met le focus a self.vue
                 self.set_focus(self.vue)
 
-    def run(self, ecran:curses.window):
+    async def run(self, ecran:curses.window):
         # initialisation
         curses.curs_set(0)  # curseur caché
         ecran.timeout(50) # timeout de 50ms pour ne pas rester bloqué au getch()
@@ -93,7 +95,12 @@ class Orchestrateur:
 
                 signaux = signals.traiter_signaux()
 
+            await asyncio.sleep(0)
+
+
+    def start(self, ecran):
+        asyncio.run(orchestrateur.run(ecran))  # lancement du main
 
 if __name__ == '__main__':
     orchestrateur = Orchestrateur()
-    curses.wrapper(orchestrateur.run) # lancement du main
+    curses.wrapper(orchestrateur.start)
