@@ -3,7 +3,7 @@ class Signal:
     def __init__(self):
         self.signaux = []  # contient des dico sous la forme {nom, data} avec nom str et data inconnu
 
-    def add_signal(self, nom_signal:str, data):
+    def add_signal(self, nom_signal:str, data=None):
         # data peut être n'importe quoi
         signal = {"nom":nom_signal, "data":data}
         self.signaux.append(signal) # ce signal sera envoyé à tout le monde par l'orchestrateur

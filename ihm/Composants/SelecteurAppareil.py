@@ -12,19 +12,28 @@ class SelecteurAppareil(VBoxSelector):
     def draw_custom(self):
         # on vérifie s'il n'y a pas d'erreur
         if self.parent.search:
-            self.liste_labels = [Label("Recherche en cours...")]
+            self.fils = [Label("Recherche en cours...")]
             self.selected = -1
-        elif self.liste_labels and self.liste_labels[0].texte == "Une erreur est survenue":
+        elif self.fils and self.fils[0].texte == "Une erreur est survenue":
             self.selected = -1
         elif self.selected == -1:
             self.selected = 0
         super().draw_custom()
 
     def input_custom(self, touche: int) -> bool:
-        if self.liste_labels and self.liste_labels[0].texte == "Une erreur est survenue":
+        if not self.fils:
+            return False
+        if self.fils and self.fils[0].texte == "Une erreur est survenue":
             return False
         return super().input_custom(touche)
 
     def on_ready_custom(self):
         super().on_ready_custom()
+
+        self.clear()
+
         self.ask_focus()
+
+    def signal_custom(self, nom_signal:str, data):
+        if nom_signal == "pin popup deleted":
+            self.ask_focus()

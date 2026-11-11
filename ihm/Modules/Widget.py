@@ -73,6 +73,16 @@ class Widget:
         # renvoie un tuple de la forme (%x, %y)
         return (100 / self.get_dimensions()[0] * x, 100 / self.get_dimensions()[1] * y)
 
+    def auto_convert(self, x, y, largeur:int, hauteur:int) -> tuple[int, int]:
+        # fonction qui convertit automatiquement les potentiels pourcentages en coordonnées
+        # peut être utilisé dans resize_custom
+        # si nombre est un float, on considère que c'est un pourcentage
+        if type(x) == float:
+            x = round(largeur / 100 * x)
+        if type(y) == float:
+            y = round(hauteur / 100 * y)
+        return (x, y)
+
     def draw(self) -> None:
         #self.ecran.erase()
         #self.ecran.refresh()
@@ -135,6 +145,16 @@ class Widget:
 
     def changer_vue(self, nom_vue:str):
         signals.add_signal("&ask_changement_vue&", nom_vue)
+
+    def auto_fit(self, x, y, largeur, hauteur, largeur_max, hauteur_max) -> tuple[int, int, int, int]:
+        # renvoie toujours un rectangle valide, contenu dans la fenêtre
+        x, y = self.auto_convert(x, y, largeur_max, hauteur_max)
+        largeur, hauteur = self.auto_convert(largeur, hauteur, largeur_max, hauteur_max)
+        x = max(0, min(x, largeur_max - 1))
+        y = max(0, min(y, hauteur_max - 1))
+        largeur = max(1, min(largeur, largeur_max - x))
+        hauteur = max(1, min(hauteur, hauteur_max - y))
+        return (x, y, largeur, hauteur)
 
     def draw_custom(self) -> None:
         pass    # à redéfinir dans les classes filles

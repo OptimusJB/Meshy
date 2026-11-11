@@ -75,7 +75,6 @@ class Orchestrateur:
                 else:
                     self.focus.input(touche)
 
-            # TODO ajouter ici traitement signaux (traiter_signaux avec un while)
             signaux = signals.traiter_signaux()
             while(signaux != []):
                 self.do_draw = True
@@ -95,7 +94,7 @@ class Orchestrateur:
 
                 signaux = signals.traiter_signaux()
 
-            await asyncio.sleep(0)
+            await asyncio.sleep(0.05)
 
 
     def start(self, ecran):

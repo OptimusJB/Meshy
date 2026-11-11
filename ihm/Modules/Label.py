@@ -9,12 +9,11 @@ class Label(Widget.Widget):
         super().__init__()
         self.x = 0  # nombre OU CENTER
         self.y = 0  # nombre OU CENTER
-        self.size = [1, 1]  # largeur, hauteur
+        self.size = [max(len(texte), 1) + 1, 1]  # largeur, hauteur
         self.texte = texte
         self.retour_ligne = True
         self.style = curses.A_NORMAL
 
-        # TODO : log affiche plusieurs fois les résultats : probablement appels multiples du scan
         self.do_draw = True # si False, le label ne sera pas affiché, mais il sera toujours dans la liste des fils du parent. Cela permet de garder les labels en mémoire, mais de ne pas les afficher.
 
 
@@ -28,13 +27,14 @@ class Label(Widget.Widget):
 
         while avancement < len(texte_split):
             premier_mot = True
-            while len(ligne_actuelle + texte_split[avancement]) < self.size[0] - 1 - self.x or premier_mot:
+            while len(ligne_actuelle + texte_split[avancement]) < self.size[0] - self.x or premier_mot:
                 premier_mot = False
-                ligne_actuelle = ligne_actuelle + " " + texte_split[avancement]
+                ligne_actuelle = ligne_actuelle + texte_split[avancement] + " "
                 avancement += 1
                 if avancement == len(texte_split):
                     break
-
+            if ligne_actuelle[-1] == " ":
+                ligne_actuelle = ligne_actuelle[:-1]
             liste.append(ligne_actuelle)
             ligne_actuelle = ""
         return liste
@@ -53,7 +53,7 @@ class Label(Widget.Widget):
                 y = round(self.pourcentage_vers_coordonnes(50)[1] - len(lignes) / 2)
 
             for ligne_actuelle in lignes:
-                log.log(ligne_actuelle)
+                #log.log(ligne_actuelle)
                 self.ecran.addstr(y, x, ligne_actuelle, self.style)
                 y += 1
 
@@ -62,17 +62,8 @@ class Label(Widget.Widget):
 
     def resize_custom(self, largeur_max, hauteur_max) -> tuple[int, int, int, int]:
         self.do_draw = True
-        x = min(self.x, largeur_max - 1)
-        y = min(self.y, hauteur_max - 1)
-
+        x, y, largeur, hauteur = self.auto_fit(self.x, self.y, self.size[0], self.size[1], largeur_max, hauteur_max)
         if y != self.y:
             self.do_draw = False
 
-        largeur = min(self.size[0], largeur_max - x)
-        if largeur <= 0:
-            largeur = 1
-
-        hauteur = min(self.size[1], hauteur_max - y)
-        if hauteur <= 0:
-            hauteur = 1
         return (x, y, largeur, hauteur)
